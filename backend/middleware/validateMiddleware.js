@@ -1,40 +1,31 @@
 import { z } from 'zod';
 
-export const signupSchema = z.object({
-    name: z
-        .string({ required_error: "Name is required" })
-        .trim()
-        .min(2, { message: "Name must be at least 2 characters" }),
-    email: z
-        .string({ required_error: "Email is required" })
-        .trim()
-        .email({ message: "Invalid email address" }),
-    password: z
-        .string({ required_error: "Password is required" })
-        .min(6, { message: "Password must be at least 6 characters" }),
-});
+export const validate = (schemas) => {
+    return (req, res, next) =>  {
+        
+        req.validated = {};
+        const errors = {};
 
-export const loginSchema = z.object({
-    email: z
-        .string({ required_error: 'Email is required' })
-        .trim()
-        .email({ message: 'Invalid email address format' }),
-    password: z
-        .string({ required_error: 'Password is required' }),
-});
+        for (const source of ["body", "query", "params"]) {
+            if (!schemas[source]) continue;
 
-export const validate = (schema) => (req, res, next) => {
-    try {
-        schema.parse(req.body);
+            const result = schemas[source].safeParse(req[source]);
+
+            if (!result.success) {
+                errors[source] = result.error.flatten().fieldErrors;
+            } else {
+                req.validated[source] = result.data;
+            }
+        }
+
+        if (Object.keys(errors).length > 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Validation failed',
+                errors
+            });
+        }
+
         next();
-    } catch (error) {
-        return res.status(400).json({
-            success: false,
-            message: 'Validation Error',
-            errors: error.errors.map((err) => ({
-                field: err.path[0],
-                message: err.message,
-            })),
-        });
     }
 };

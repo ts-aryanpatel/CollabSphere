@@ -1,0 +1,67 @@
+ye rha complete authenication system topics ya features -
+✓ Signup
+✓ Login
+
+✓ Access Token
+✓ Refresh Token
+
+✓ Refresh Token Rotation
+
+✓ Logout Current Device
+
+✓ Logout All Devices
+
+✓ Change Password
+
+✓ Email Verification
+
+✓ Forgot Password
+
+✓ Reset Password
+
+✓ Authentication Middleware
+
+✓ Authorization Middleware
+
+✓ Rate Limiting
+
+Google Oauth
+
+
+
+Rest APIs + Error Handling
+✅ HTTP status codes — sahi jagah sahi code
+✅ Consistent response structure — success + error
+✅ Custom ApiError class
+✅ Custom ApiResponse class  
+✅ asyncHandler wrapper
+✅ Global error handler — mongoose + jwt errors handle karna
+✅ API versioning
+✅ Pagination + filtering + sorting
+✅ Proper route naming (REST conventions)
+✅ 404 handler
+
+
+Database Skills
+✅ Schema Design      — embedding vs referencing, relationships
+✅ Mongoose Schema    — validation, virtuals, middleware, methods, statics
+✅ Indexing           — single, compound, text, TTL, explain plan
+✅ Aggregation        — match, group, project, lookup, unwind, facet, bucket
+✅ Transactions       — session, commit, rollback
+✅ Query Optimization — select, lean, populate, N+1 problem
+✅ Soft Delete        — pattern + query middleware
+✅ Data Validation    — custom validators, conditional required
+✅ Plugins            — reusable schema logic
+
+File uploads
+
+
+Real-time (WebSockets + Socket.io)
+
+Caching (Redis)
+
+Payment Integration (Razorpay)
+
+Testing (Jest + Supertest)
+
+Deployment

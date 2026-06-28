@@ -1,4 +1,5 @@
 import express from "express";
+import errorHandler from './middleware/errorHandler.js';
 import cors from "cors";
 
 const app = express();
@@ -15,13 +16,7 @@ app.get("/health", (req, res) => {
 });
 
 
-app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).json({
-        success: false,
-        message: 'Internal Server Error'
-    });
-});
+app.use(errorHandler);
 
 
 export default app;
