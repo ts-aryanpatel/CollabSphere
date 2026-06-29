@@ -4,6 +4,7 @@ import { hashToken } from "../utils/hashToken.js";
 import AppError from "../utils/AppError.js";
 import ApiResponse from "../utils/apiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
+import { setRandomFallback } from "bcryptjs";
 
 
 // @desc    Register a new user
@@ -60,4 +61,43 @@ export const loginUser = asyncHandler(async (req, res, next) => {
                 'Login successful'
             )
         );
+});
+
+// @desc    Logout user & clear session / cookies with strict verification
+// @route   POST /api/auth/logout
+export const logoutUser = asyncHandler(async (req, res, next) => {
+    const refreshToken = req.cookies?.refreshToken;
+
+    if (!refreshToken) {
+        return next(new AppError('No active session found or already logged out', 400));
+    }
+
+    const hashedToken = hashToken(refreshToken);
+
+    const user = await User.findOne({ refreshToken: hashedToken });
+
+    if (!user) {
+        const cookieOptions = {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict'
+        };
+        res.clearCookie('refreshToken', cookieOptions);
+
+        return next(new AppError('Invalid or expired session token', 401));
+    }
+
+    user.refreshToken = "";
+    await user.save();
+
+    const cookieOptions = {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict'
+    };
+
+    return res
+        .status(200)
+        .clearCookie('refreshToken', cookieOptions)
+        .json(new ApiResponse(200, null, 'Logged out successfully'));
 });
