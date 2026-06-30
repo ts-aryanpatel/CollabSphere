@@ -1,5 +1,5 @@
 import express from "express";
-import { registerUser, loginUser, logoutUser } from "../controllers/authController.js";
+import { registerUser, loginUser, logoutUser, refreshAccessToken } from "../controllers/authController.js";
 import { validate } from "../middleware/validateMiddleware.js";
 import { signupSchema, loginSchema} from "../validators/authValidate.js";
 
@@ -13,6 +13,9 @@ router.post('/login', validate({ body: loginSchema }), loginUser);
 
 // Logout route
 router.post('/logout', logoutUser);
+
+// Token Rotation
+router.post("/refresh", refreshAccessToken);
 
 
 export default router;

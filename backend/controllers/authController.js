@@ -4,7 +4,7 @@ import { hashToken } from "../utils/hashToken.js";
 import AppError from "../utils/AppError.js";
 import ApiResponse from "../utils/apiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
-import { setRandomFallback } from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 
 // @desc    Register a new user
@@ -100,4 +100,55 @@ export const logoutUser = asyncHandler(async (req, res, next) => {
         .status(200)
         .clearCookie('refreshToken', cookieOptions)
         .json(new ApiResponse(200, null, 'Logged out successfully'));
+});
+
+// @desc
+// @route  POST /api/auth/refresh
+export const refreshAccessToken = asyncHandler(async (req, res, next) => {
+    const refreshToken = req.cookies?.refreshToken;
+
+    if (!refreshToken) {
+        return next(new AppError('Refresh token missing, please login again', 401));
+    }
+
+    let decoded;
+    try {
+        decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+    } catch (error) {
+        return next(new AppError('Refresh token expired or invalid', 401));
+    }
+
+    const hashedToken = hashToken(refreshToken);
+
+    const user = await User.findById(decoded.id);
+
+    if (!user || user.refreshToken !== hashedToken) {
+        return next(new AppError('Invalid session, token mismatch', 401));
+    }
+
+    const newAccessToken = generateToken(user, 'accessToken');
+    const newRefreshToken = generateToken(user, 'refreshToken');
+
+    const newHashedToken = hashToken(newRefreshToken);
+
+    user.refreshToken = newHashedToken;
+    await user.save();
+
+    const cookieOptions = {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 7 * 24 * 60 * 60 * 1000
+    }
+
+    return res
+        .status(200)
+        .cookie('refreshToken', newRefreshToken, cookieOptions)
+        .json(
+            new ApiResponse(
+                200,
+                { accessToken : newAccessToken },
+                'Access token refreshed successfully'
+            )
+        );
 });
